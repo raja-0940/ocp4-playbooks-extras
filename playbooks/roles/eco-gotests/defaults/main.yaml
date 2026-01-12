@@ -1,0 +1,8 @@
+---
+eco_gotests_validation: false
+eco_gotests_repo: "hhttps://github.com/openshift-kni/eco-gotests"
+eco_gotests_git_branch: "main"
+eco_gotests_directory: "/tmp/eco-gotests"
+eco_gotests_golang_tarball: "https://go.dev/dl/go1.24.1.linux-ppc64le.tar.gz"
+testcase_filters : 'Image_Registry\\|API_Server'
+

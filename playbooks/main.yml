@@ -169,3 +169,6 @@
 - import_playbook: ocp-kmm.yml
   when: kmm_enabled is defined and kmm_enabled
 
+- import_playbook: eco-gotests.yml
+  when: eco_gotests_validation is defined and eco_gotests_validation
+
