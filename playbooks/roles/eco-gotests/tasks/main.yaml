@@ -61,21 +61,61 @@
         dest: /usr/local/bin/ginkgo
         state: link
 
-    - name: Install local container registry ( Crane registry )
-      include_role:
-        name: crane-registry
+    # - name: Install local container registry ( Crane registry )
+    #   include_role:
+    #     name: crane-registry
 
-    - name: Configure local registry as insecure
-      copy:
-        dest: /etc/containers/registries.conf.d/local-crane.conf
-        content: |
-          [[registry]]
-          location = "{{ crane_registry_addr }}"
-          insecure = true
+    # - name: Configure local registry as insecure
+    #   copy:
+    #     dest: /etc/containers/registries.conf.d/local-crane.conf
+    #     content: |
+    #       [[registry]]
+    #       location = "{{ crane_registry_addr }}"
+    #       insecure = true
 
-    - name: Build and push power-device-plugin image
-      include_role:
-        name: power-device-plugin-build
+    # - name: Build and push power-device-plugin image
+    #   include_role:
+    #     name: power-device-plugin-build
+
+    - name: Validate crane registry address is provided
+      fail:
+        msg: "crane_registry_addr is not defined"
+      when:  crane_registry_addr is not defined or crane_registry_addr | length == 0
+
+    - name: Check crane registry is reachable
+      command: >
+        curl -s --connect-timeout 3
+        http://{{ crane_registry_addr }}/v2/_catalog
+      register: crane_registry_addr
+      changed_when: false
+      failed_when: crane_registry_addr.rc != 0
+
+    - name: Show crane registry catalog
+      debug: "Crane registry reachable. Catalog: {{ crane_registry_addr }}"
+
+    - name: validate power-device-plugin image variables
+      fail:
+        msg: "Missing Power-device-plugin image variables"
+      when:
+        - pdp_registry_namespace is not defined 
+        - pdp_image_name is not defined
+        - pdp_image_tag is not defined
+
+    - name: Check power-device-plugin image tags
+      command: >
+        curl -s
+        http://{{ crane_registry_addr }}/v2/{{ pdp_registry_namespace }}/{{ pdp_image_name }}/tags/list
+        register: pdp_image_tags
+        changed_when: false
+
+    - name: Fail if power-device-plugin image tag not found
+      fail:
+        msg: >
+          Image {{ crane_registry_addr }}/{{ pdp_registry_namespace }}/{{ pdp_image_name }}:{{ pdp_image_tag }}
+          not found in local crane resgistry
+      when: pdp_image_tag not in (pdp_image_tags.stdout | from_json).tags
+
+    
 
     
 
@@ -92,46 +132,46 @@
 
 
 
-    - name: Create openshift-test-private working directory
-      file:
-        path: "{{ eco_gotests_directory }}"
-        state: directory
-        mode: '0755'
+  #   - name: Create openshift-test-private working directory
+  #     file:
+  #       path: "{{ eco_gotests_directory }}"
+  #       state: directory
+  #       mode: '0755'
 
-    - name: Clone openshift-test-private repo
-      git:
-        repo: "https://{{ github_username }}:{{ github_personal_access_token }}@github.com/{{ eco_gotests_repo | urlsplit('path') }}"
-        dest: "{{ eco_gotests_directory }}/eco-gotests"
-        version: "{{ eco_gotests_git_branch }}"
-        force: true
+  #   - name: Clone openshift-test-private repo
+  #     git:
+  #       repo: "https://{{ github_username }}:{{ github_personal_access_token }}@github.com/{{ eco_gotests_repo | urlsplit('path') }}"
+  #       dest: "{{ eco_gotests_directory }}/eco-gotests"
+  #       version: "{{ eco_gotests_git_branch }}"
+  #       force: true
 
-    - name: Run make build command at target
-      shell: make
-      environment: "{{ eco_tests_private_env }}"
-      args:
-        chdir: "{{ eco_gotests_directory }}/eco-gotests"
+  #   - name: Run make build command at target
+  #     shell: make
+  #     environment: "{{ eco_tests_private_env }}"
+  #     args:
+  #       chdir: "{{ eco_gotests_directory }}/eco-gotests"
 
-    - name: Check if the binary is created
-      shell: ls -hl {{ openshift_test_private_directory }}/openshift-tests-private/bin/extended-platform-tests | wc -l
-      args:
-        chdir: "{{ openshift_test_private_directory }}/openshift-tests-private"
-      register: bin_output
-      failed_when: bin_output.stdout|int != 1
+  #   - name: Check if the binary is created
+  #     shell: ls -hl {{ openshift_test_private_directory }}/openshift-tests-private/bin/extended-platform-tests | wc -l
+  #     args:
+  #       chdir: "{{ openshift_test_private_directory }}/openshift-tests-private"
+  #     register: bin_output
+  #     failed_when: bin_output.stdout|int != 1
 
-    - name: Run the e2e test command for all
-      shell: ./bin/extended-platform-tests run all --dry-run | 
-        ./bin/extended-platform-tests run -f - -o ../all-tests-logs.txt
-      when: not testcase_filters
-      args:
-        chdir: "{{ openshift_test_private_directory }}/openshift-tests-private"
-      environment: "{{ openshift_test_private_env }}"
+  #   - name: Run the e2e test command for all
+  #     shell: ./bin/extended-platform-tests run all --dry-run | 
+  #       ./bin/extended-platform-tests run -f - -o ../all-tests-logs.txt
+  #     when: not testcase_filters
+  #     args:
+  #       chdir: "{{ openshift_test_private_directory }}/openshift-tests-private"
+  #     environment: "{{ openshift_test_private_env }}"
 
-    - name: Run the e2e test command for multiple filters
-      shell: ./bin/extended-platform-tests run all --dry-run | grep "{{ testcase_filters }}" | 
-        ./bin/extended-platform-tests run -f - -o ../multi-filter-tests-logs.txt
-      when: testcase_filters
-      args:
-        chdir: "{{ openshift_test_private_directory }}/openshift-tests-private"
-      environment: "{{ openshift_test_private_env }}"
+  #   - name: Run the e2e test command for multiple filters
+  #     shell: ./bin/extended-platform-tests run all --dry-run | grep "{{ testcase_filters }}" | 
+  #       ./bin/extended-platform-tests run -f - -o ../multi-filter-tests-logs.txt
+  #     when: testcase_filters
+  #     args:
+  #       chdir: "{{ openshift_test_private_directory }}/openshift-tests-private"
+  #     environment: "{{ openshift_test_private_env }}"
 
-  when: eco_gotests_validation
+  # when: eco_gotests_validation
