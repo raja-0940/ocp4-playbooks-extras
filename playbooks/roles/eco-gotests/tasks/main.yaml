@@ -24,7 +24,7 @@
       include_role:
         name: golang-installation
       vars:
-        go_tarball: "{{ eco_gotests_golang_tarball }}"
+        go_tarball: "{{ golang_tarball_url }}"
         golang_path: "/usr/local"
 
     - name: Set Go environment facts
@@ -38,7 +38,7 @@
         export GOROOT={{ go_root }}
         export GOPATH={{ go_path }}
         export PATH=$PATH:{{ go_root }}/bin:{{ go_bin }}
-        go install github.com/onsi/ginkgo/v2/ginkgo@2.23.4
+        go install github.com/onsi/ginkgo/v2/ginkgo@v2.23.4
       args:
         executable: /bin/bash
       environment:
@@ -84,14 +84,13 @@
 
     - name: Check crane registry is reachable
       command: >
-        curl -s --connect-timeout 3
-        http://{{ crane_registry_addr }}/v2/_catalog
-      register: crane_registry_addr
-      changed_when: false
-      failed_when: crane_registry_addr.rc != 0
+        curl -s -k http://{{ crane_registry_addr }}/v2/_catalog
+      register: crane_registry_catalog
+      changed_when: false      
 
     - name: Show crane registry catalog
-      debug: "Crane registry reachable. Catalog: {{ crane_registry_addr }}"
+      debug:
+        msg: "Crane registry reachable. Catalog: {{ crane_registry_catalog.stdout }}"
 
     - name: validate power-device-plugin image variables
       fail:
@@ -103,17 +102,23 @@
 
     - name: Check power-device-plugin image tags
       command: >
-        curl -s
-        http://{{ crane_registry_addr }}/v2/{{ pdp_registry_namespace }}/{{ pdp_image_name }}/tags/list
+        curl -s http://{{ crane_registry_addr }}/v2/{{ pdp_registry_namespace }}/{{ pdp_image_name }}/tags/list
         register: pdp_image_tags
         changed_when: false
+        failed_when: true
+
+    - name: Debug power-device-plugin image tags
+      debug:
+        var: pdp_image_tags.stdout
 
     - name: Fail if power-device-plugin image tag not found
       fail:
         msg: >
           Image {{ crane_registry_addr }}/{{ pdp_registry_namespace }}/{{ pdp_image_name }}:{{ pdp_image_tag }}
           not found in local crane resgistry
-      when: pdp_image_tag not in (pdp_image_tags.stdout | from_json).tags
+      when: >
+        - pdp_image_tags.stdout is defined
+        - pdp_image_tag not in (pdp_image_tags.stdout | from_json).tags
 
     
 

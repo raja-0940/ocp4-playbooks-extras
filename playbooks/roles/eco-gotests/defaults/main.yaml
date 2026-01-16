@@ -1,9 +1,12 @@
 ---
 eco_gotests_validation: false
-eco_gotests_repo: "https://github.com/openshift-kni/eco-gotests"
+eco_gotests_repo: "hhttps://github.com/openshift-kni/eco-gotests"
 eco_gotests_git_branch: "main"
 eco_gotests_directory: "/tmp/eco-gotests"
-eco_gotests_golang_tarball: "https://go.dev/dl/go1.24.1.linux-ppc64le.tar.gz"
+golang_tarball_url: "https://go.dev/dl/go1.24.1.linux-ppc64le.tar.gz"
+golang_installation_path: "/usr/local/"
 testcase_filters : 'Image_Registry\\|API_Server'
-
-
+crane_registry_addr: "10.20.183.20:40000"
+pdp_registry_namespace: "ubi9" 
+pdp_image_name: "power-dev-plugin"
+pdp_image_tag: "latest-ppc64le"
