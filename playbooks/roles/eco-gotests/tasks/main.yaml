@@ -32,6 +32,12 @@
         go_root: "/usr/local/go"
         go_path: "/root/go"
         go_bin: "/root/go/bin"
+
+    - name: Ensure eco-gotests directory exists
+      git:
+        repo: https://github.com/openshift-kni/eco-gotests.git
+        dest: /tmp/eco-gotests
+        version: main
         
     - name: Ginkgo installation
       shell: |
@@ -92,33 +98,44 @@
       debug:
         msg: "Crane registry reachable. Catalog: {{ crane_registry_catalog.stdout }}"
 
-    - name: validate power-device-plugin image variables
-      fail:
-        msg: "Missing Power-device-plugin image variables"
-      when:
-        - pdp_registry_namespace is not defined 
-        - pdp_image_name is not defined
-        - pdp_image_tag is not defined
+    - name: Install KMM operator
+      include_role:
+        name: ocp-kmm
 
-    - name: Check power-device-plugin image tags
-      command: >
-        curl -s http://{{ crane_registry_addr }}/v2/{{ pdp_registry_namespace }}/{{ pdp_image_name }}/tags/list
-        register: pdp_image_tags
-        changed_when: false
-        failed_when: true
+    - name: Wait for KMM operator to be available
+      shell: |
+        oc wait deployment/kmm-operator -n openshift-kmm --for=condition=Available --timeout=300s
+      args:
+        executable: /bin/bash
 
-    - name: Debug power-device-plugin image tags
+    - name: Set KMM environment variables for eco-gotests
+      set_fact:
+        kmm_test_env:
+          GLOG_v: "101"
+          KUBECONFIG: "/root/.kube/config"
+          ECO_HWACCEL_KMM_REGISTRY: "{{ crane_registry_addr }}/{{ pdp_registry_namespace }}"
+          ECO_TEST_FEATURES: "modules"
+          ECO_TEST_LABELS: "KMM"
+          ECO_HWACCEL_KMM_SUBSCRIPTION_NAME: "kernel-module-management"
+          ECO_HWACCEL_KMM_UPGRADE_TARGET_VERSION: "2.4.1"
+          ECO_HWACCEL_KMM_CATALOG_SOURCE_NAME: "redhat-operators"
+          ECO_HWACCEL_KMM_PULL_SECRET: "TOKEN"
+          ECO_HWACCEL_KMM_SERVICEACCOUNT: "kmm-helper-sa"
+          ECO_HWACCEL_KMM_DEVICE_PLUGIN_IMAGE: >
+            "{{ crane_registry_addr }}/{{ pdp_registry_namespace }}/{{ pdp_image_name }}:{{ pdp_image_tag }}"
+
+    - name: Show KMM environment variables
       debug:
-        var: pdp_image_tags.stdout
+        var: kmm_test_env
 
-    - name: Fail if power-device-plugin image tag not found
-      fail:
-        msg: >
-          Image {{ crane_registry_addr }}/{{ pdp_registry_namespace }}/{{ pdp_image_name }}:{{ pdp_image_tag }}
-          not found in local crane resgistry
-      when: >
-        - pdp_image_tags.stdout is defined
-        - pdp_image_tag not in (pdp_image_tags.stdout | from_json).tags
+    - name: Run KMM Ginkgo tests with full logs
+      shell: |
+        set -o pipefail
+        ginkgo -vv ./tests/hw-accel/kmm/modules -- -v=90 2>&1 | tee ~/all-kmm-tests-$(date +%d%m%y).log
+      args:
+        chdir: "{{ eco_gotests_directory }}"
+        executable: /bin/bash
+      environment: "{{ kmm_test_env }}"
 
     
 

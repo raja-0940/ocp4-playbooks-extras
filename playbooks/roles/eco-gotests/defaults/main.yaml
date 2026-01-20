@@ -9,4 +9,4 @@ testcase_filters : 'Image_Registry\\|API_Server'
 crane_registry_addr: "10.20.183.20:40000"
 pdp_registry_namespace: "ubi9" 
 pdp_image_name: "power-dev-plugin"
-pdp_image_tag: "latest-ppc64le"
+pdp_image_tag: "latest-s%"
