@@ -96,7 +96,7 @@
 
     - name: Build oc-dummy-device-plugin image for KMM tests
       include_role:
-        name: device-plugin-image-built
+        name: device-plugin-image-build
 
     - name: Install KMM operator
       include_role:

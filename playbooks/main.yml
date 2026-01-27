@@ -172,3 +172,6 @@
 - import_playbook: eco-gotests.yml
   when: eco_gotests_validation is defined and eco_gotests_validation
 
+- import_playbook: device-plugin-image-build.yaml
+  when: device-plugin-image-build is defined and device-plugin-image-build
+
