@@ -19,7 +19,7 @@
   git:
     repo: "{{ device_plugin_repo }}"
     dest: "{{ device_plugin_workdir }}"
-    version: main
+    version: master
     force: yes
     update: no
 
