@@ -20,6 +20,8 @@
     repo: "{{ device_plugin_repo }}"
     dest: "{{ device_plugin_workdir }}"
     version: main
+    force: yes
+    update: no
 
 # Download go-toolset Containerfile
 - name: Download Containerfile-go-toolset
