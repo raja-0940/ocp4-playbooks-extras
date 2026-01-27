@@ -79,10 +79,6 @@
     #       location = "{{ crane_registry_addr }}"
     #       insecure = true
 
-    # - name: Build and push power-device-plugin image
-    #   include_role:
-    #     name: power-device-plugin-build
-
     - name: Validate crane registry address is provided
       fail:
         msg: "crane_registry_addr is not defined"
@@ -97,6 +93,10 @@
     - name: Show crane registry catalog
       debug:
         msg: "Crane registry reachable. Catalog: {{ crane_registry_catalog.stdout }}"
+
+    - name: Build oc-dummy-device-plugin image for KMM tests
+      include_role:
+        name: device-plugin-image-built
 
     - name: Install KMM operator
       include_role:
@@ -136,64 +136,3 @@
         chdir: "{{ eco_gotests_directory }}"
         executable: /bin/bash
       environment: "{{ kmm_test_env }}"
-
-    
-
-    
-
-      
-
-
-
-
-
-
-
-
-
-
-
-
-  #   - name: Create openshift-test-private working directory
-  #     file:
-  #       path: "{{ eco_gotests_directory }}"
-  #       state: directory
-  #       mode: '0755'
-
-  #   - name: Clone openshift-test-private repo
-  #     git:
-  #       repo: "https://{{ github_username }}:{{ github_personal_access_token }}@github.com/{{ eco_gotests_repo | urlsplit('path') }}"
-  #       dest: "{{ eco_gotests_directory }}/eco-gotests"
-  #       version: "{{ eco_gotests_git_branch }}"
-  #       force: true
-
-  #   - name: Run make build command at target
-  #     shell: make
-  #     environment: "{{ eco_tests_private_env }}"
-  #     args:
-  #       chdir: "{{ eco_gotests_directory }}/eco-gotests"
-
-  #   - name: Check if the binary is created
-  #     shell: ls -hl {{ openshift_test_private_directory }}/openshift-tests-private/bin/extended-platform-tests | wc -l
-  #     args:
-  #       chdir: "{{ openshift_test_private_directory }}/openshift-tests-private"
-  #     register: bin_output
-  #     failed_when: bin_output.stdout|int != 1
-
-  #   - name: Run the e2e test command for all
-  #     shell: ./bin/extended-platform-tests run all --dry-run | 
-  #       ./bin/extended-platform-tests run -f - -o ../all-tests-logs.txt
-  #     when: not testcase_filters
-  #     args:
-  #       chdir: "{{ openshift_test_private_directory }}/openshift-tests-private"
-  #     environment: "{{ openshift_test_private_env }}"
-
-  #   - name: Run the e2e test command for multiple filters
-  #     shell: ./bin/extended-platform-tests run all --dry-run | grep "{{ testcase_filters }}" | 
-  #       ./bin/extended-platform-tests run -f - -o ../multi-filter-tests-logs.txt
-  #     when: testcase_filters
-  #     args:
-  #       chdir: "{{ openshift_test_private_directory }}/openshift-tests-private"
-  #     environment: "{{ openshift_test_private_env }}"
-
-  # when: eco_gotests_validation
