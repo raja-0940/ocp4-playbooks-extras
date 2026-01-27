@@ -43,7 +43,7 @@
 - name: Update builder image in Dockerfile to use go_toolset_image
   replace:
     path: "{{ device_plugin_workdir }}/Dockerfile"
-    regex: '^FROM\s+.*\s+AS\s+builder'
+    regexp: '^FROM\s+.*\s+AS\s+builder'
     replace: 'FROM {{ go_toolset_image }} AS builder'
 
 - name: Verified updated builder image in Dockerfile
