@@ -67,22 +67,29 @@
         dest: /usr/local/bin/ginkgo
         state: link
 
-    # - name: Install local container registry ( Crane registry )
-    #   include_role:
-    #     name: crane-registry
+    - name: Install local container registry ( Crane registry )
+      include_role:
+        name: crane-registry
 
-    # - name: Configure local registry as insecure
-    #   copy:
-    #     dest: /etc/containers/registries.conf.d/local-crane.conf
-    #     content: |
-    #       [[registry]]
-    #       location = "{{ crane_registry_addr }}"
-    #       insecure = true
+    - name: Add the following nameservers in /etc/resolv.conf
+      lineinfile:
+        path: /etc/resolv.conf
+        line: "{{ item }}"
+        state: present
+        insertafter: EOF
+        create: no
+      loop:
+        - "nameserver 10.0.10.4"
+        - "nameserver 10.0.10.5"
+      become: yes
 
-    - name: Validate crane registry address is provided
-      fail:
-        msg: "crane_registry_addr is not defined"
-      when:  crane_registry_addr is not defined or crane_registry_addr | length == 0
+    - name: Configure local registry as insecure
+      copy:
+        dest: /etc/containers/registries.conf.d/local-crane.conf
+        content: |
+          [[registry]]
+          location = "{{ crane_registry_addr }}"
+          insecure = true
 
     - name: Check crane registry is reachable
       command: >
@@ -117,7 +124,7 @@
           ECO_TEST_FEATURES: "modules"
           ECO_TEST_LABELS: "KMM"
           ECO_HWACCEL_KMM_SUBSCRIPTION_NAME: "kernel-module-management"
-          ECO_HWACCEL_KMM_UPGRADE_TARGET_VERSION: "2.4.1"
+          ECO_HWACCEL_KMM_UPGRADE_TARGET_VERSION: "2.5.1"
           ECO_HWACCEL_KMM_CATALOG_SOURCE_NAME: "redhat-operators"
           ECO_HWACCEL_KMM_PULL_SECRET: "TOKEN"
           ECO_HWACCEL_KMM_SERVICEACCOUNT: "kmm-helper-sa"
