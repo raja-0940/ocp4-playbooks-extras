@@ -1,5 +1,9 @@
 ---
 # Check if worker nodes can reach the crane registry
+- name: Default crane registry accessibility
+  set_fact:
+    crane_registry_accessible: false
+
 - name: Test registry accessibility from worker nodes
   command: >
     oc debug node/{{ item }} -- chroot /host
@@ -10,7 +14,9 @@
   loop: "{{ groups['worker'] | default([]) }}"
   run_once: true
   changed_when: false
-  when: groups['worker'] is defined
+  when:
+    - groups['worker'] is defined
+    - groups['worker'] | length > 0
 
 - name: Determine registry accessibility
   set_fact:
@@ -18,6 +24,7 @@
       {{ 
         registry_access_test is defined and
         registry_access_test.results is defined and
+        (registry_access_test.results | length > 0) and
         (registry_access_test.results | map(attribute='rc') | min == 0)
       }}
 
@@ -25,7 +32,6 @@
   debug:
     msg: "Crane registry reachable from workers: {{ crane_registry_accessible }}"
 
-# CONDITIONAL FIXES (ONLY RUN IF NOT ACCESSIBLE)
 - name: Open firewall port on bastion
   firewalld:
     port: "{{ crane_port }}/tcp"
