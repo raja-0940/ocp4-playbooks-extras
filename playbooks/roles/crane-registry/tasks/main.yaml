@@ -19,7 +19,7 @@
 
 - name: Extract crane tarball
   unarchive:
-    src: "/src/{{ crane_tarball }}"
+    src: "/tmp/{{ crane_tarball }}"
     dest: /tmp
     remote_src: yes
   when: install_crane_registry
