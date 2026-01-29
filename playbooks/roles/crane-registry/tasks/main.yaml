@@ -8,7 +8,21 @@
 
 - name: Show detected crane registry address
   debug:
-    msg: "Crane registry will run on {{ crane_registry_addr }}"  
+    msg: "Crane registry will run on {{ crane_registry_addr }}"
+
+- name: Download crane tarball
+  get_url:
+    url: "{{ crane_download_url }}"
+    dest: "/tmp/{{ crane_tarball }}"
+    mode: '0644'
+  when: install_crane_registry
+
+- name: Extract crane tarball
+  unarchive:
+    src: "/src/{{ crane_tarball }}"
+    dest: /tmp
+    remote_src: yes
+  when: install_crane_registry
 
 - name: Install crane binary
   copy:
