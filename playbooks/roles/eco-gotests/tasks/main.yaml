@@ -111,7 +111,7 @@
 
     - name: Wait for KMM operator to be available
       shell: |
-        oc wait deployment/kmm-operator -n openshift-kmm --for=condition=Available --timeout=300s
+        oc wait deployment/kmm-operator-controller -n openshift-kmm --for=condition=Available --timeout=300s
       args:
         executable: /bin/bash
 
