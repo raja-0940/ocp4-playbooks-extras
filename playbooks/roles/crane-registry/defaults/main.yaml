@@ -1,4 +1,7 @@
 ---
+
+install_crane_registry: false
+
 crane_version: "v0.20.6"
 crane_port: "40000"
 
