@@ -7,14 +7,19 @@
     http://{{ crane_registry_addr }}/v2/_catalog
   register: registry_access_test
   ignore_errors: yes
-  loop: "{{ groups['worker'] }}"
+  loop: "{{ groups['worker'] | default([]) }}"
   run_once: true
   changed_when: false
+  when: groups['worker'] is defined
 
 - name: Determine registry accessibility
   set_fact:
     crane_registry_accessible: >-
-      {{ registry_access_test.results | map(attribute='rc') | min == 0 }}
+      {{ 
+        registry_access_test is defined and
+        registry_access_test.results is defined and
+        (registry_access_test.results | map(attribute='rc') | min == 0)
+      }}
 
 - name: Show registry accessibility result
   debug:
