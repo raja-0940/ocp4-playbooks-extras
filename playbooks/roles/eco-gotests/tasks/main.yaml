@@ -44,7 +44,7 @@
         export GOROOT={{ go_root }}
         export GOPATH={{ go_path }}
         export PATH=$PATH:{{ go_root }}/bin:{{ go_bin }}
-        go install github.com/onsi/ginkgo/v2/ginkgo@v2.23.4
+        go install github.com/onsi/ginkgo/v2/ginkgo@$(grep ginkgo go.mod | awk '{print $2}')
       args:
         executable: /bin/bash
       environment:
@@ -128,8 +128,7 @@
           ECO_HWACCEL_KMM_CATALOG_SOURCE_NAME: "redhat-operators"
           ECO_HWACCEL_KMM_PULL_SECRET: "TOKEN"
           ECO_HWACCEL_KMM_SERVICEACCOUNT: "kmm-helper-sa"
-          ECO_HWACCEL_KMM_DEVICE_PLUGIN_IMAGE: >
-            "{{ crane_registry_addr }}/{{ pdp_registry_namespace }}/{{ pdp_image_name }}:{{ pdp_image_tag }}"
+          ECO_HWACCEL_KMM_DEVICE_PLUGIN_IMAGE: "{{ crane_registry_addr }}/{{ pdp_registry_namespace }}/{{ pdp_image_name }}:{{ pdp_image_tag }}"
 
     - name: Show KMM environment variables
       debug:
