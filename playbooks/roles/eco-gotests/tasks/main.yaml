@@ -44,7 +44,7 @@
         export GOROOT={{ go_root }}
         export GOPATH={{ go_path }}
         export PATH=$PATH:{{ go_root }}/bin:{{ go_bin }}
-        go install github.com/onsi/ginkgo/v2/ginkgo@$(grep ginkgo go.mod | awk '{print $2}')
+        go install github.com/onsi/ginkgo/v2/ginkgo@$(grep ginkgo /tmp/eco-gotests/go.mod | awk '{print $2}')
       args:
         executable: /bin/bash
       environment:
@@ -120,13 +120,15 @@
         kmm_test_env:
           GLOG_v: "101"
           KUBECONFIG: "/root/.kube/config"
+          GOPATH: "$HOME/go"
+          PATH: "$PATH:/usr/local/go/bin:$GOPATH/bin"
           ECO_HWACCEL_KMM_REGISTRY: "{{ crane_registry_addr }}/{{ pdp_registry_namespace }}"
           ECO_TEST_FEATURES: "modules"
           ECO_TEST_LABELS: "KMM"
           ECO_HWACCEL_KMM_SUBSCRIPTION_NAME: "kernel-module-management"
           ECO_HWACCEL_KMM_UPGRADE_TARGET_VERSION: "2.5.1"
           ECO_HWACCEL_KMM_CATALOG_SOURCE_NAME: "redhat-operators"
-          ECO_HWACCEL_KMM_PULL_SECRET: "TOKEN"
+          ECO_HWACCEL_KMM_PULL_SECRET: "YWRtaW46YWRtaW4K"
           ECO_HWACCEL_KMM_SERVICEACCOUNT: "kmm-helper-sa"
           ECO_HWACCEL_KMM_DEVICE_PLUGIN_IMAGE: "{{ crane_registry_addr }}/{{ pdp_registry_namespace }}/{{ pdp_image_name }}:{{ pdp_image_tag }}"
 
@@ -134,10 +136,15 @@
       debug:
         var: kmm_test_env
 
+    - name: Ensure expect is installed (for unbuffer)
+      package:
+        name: expect
+        state: present
+
     - name: Run KMM Ginkgo tests with full logs
       shell: |
         set -o pipefail
-        ginkgo -vv ./tests/hw-accel/kmm/modules -- -v=90 2>&1 | tee ~/all-kmm-tests-$(date +%d%m%y).log
+        unbuffer ginkgo -vv --no-color --trace ./tests/hw-accel/kmm/modules -- -v=90
       args:
         chdir: "{{ eco_gotests_directory }}"
         executable: /bin/bash
