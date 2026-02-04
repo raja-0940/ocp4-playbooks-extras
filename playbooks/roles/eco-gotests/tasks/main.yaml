@@ -144,7 +144,51 @@
     - name: Run KMM Ginkgo tests with full logs
       shell: |
         set -o pipefail
-        unbuffer ginkgo -vv --no-color --trace ./tests/hw-accel/kmm/modules -- -v=90
+        # For all kmm tests
+        # unbuffer ginkgo -vv --no-color --trace ./tests/hw-accel/kmm/modules -- -v=90
+        
+        # For Device plugin test
+        # unbuffer ginkgo -focus="should deploy module with a device plugin" -vv --no-color --trace ./tests/hw-accel/kmm/modules -- -v=90
+        
+        # For External Registry Test
+        # unbuffer ginkgo -focus="should build and push image to quay|should delete simple-kmod module|should generate events on nodes when module is loaded|should deploy prebuild image|should delete simple-kmod module|should deploy prebuild image with global secret|should build image without loading it" -vv --no-color --trace ./tests/hw-accel/kmm/modules -- -v=90
+        
+        # For Multistage-build test
+        # unbuffer ginkgo -focus="should use internal image-stream|should sign an existing image and load the signed module" -vv --no-color --trace ./tests/hw-accel/kmm/modules -- -v=90
+        
+        # For Multiple modules test
+        # unbuffer ginkgo -focus="should fail if any of the modules is not present" -vv --no-color --trace ./tests/hw-accel/kmm/modules -- -v=90
+        
+        # For Signing test
+        # unbuffer ginkgo -focus="should use build and sign a module|should generate event about build being created and completed|should generate event about sign being created and completed|Should be able to run preflightvalidation with no push|Should be able to run preflightvalidation and push to registry" -vv --no-color --trace ./tests/hw-accel/kmm/modules -- -v=90
+        
+        # For taint tolerations test
+        # unbuffer ginkgo -focus="should deploy module with NoSchedule toleration|should deploy module with NoExecute toleration|should deploy module with device plugin and NoSchedule toleration|should deploy module with device plugin and NoExecute toleration|should handle taints used by cluster upgrade" -vv --no-color --trace ./tests/hw-accel/kmm/modules -- -v=90
+        
+        # For clamAV test
+        # unbuffer ginkgo -focus="should pass malware testing" -vv --no-color --trace ./tests/hw-accel/kmm/modules -- -v=90
+        
+        # For Firmware test
+        # unbuffer ginkgo -focus="should properly build a module with firmware support" -vv --no-color --trace ./tests/hw-accel/kmm/modules -- -v=90
+
+        # For Intree replacement test
+        # unbuffer ginkgo -focus="should replace in-tree module" -vv --no-color --trace ./tests/hw-accel/kmm/modules -- -v=90
+
+        # For Mustgather test
+        # unbuffer ginkgo -focus="Check must-gather functionality" -vv --no-color --trace ./tests/hw-accel/kmm/modules -- -v=90
+
+        # For olm test
+        # unbuffer ginkgo -focus="Operator should be properly installed|Webhook server should be properly installed" -vv --no-color --trace ./tests/hw-accel/kmm/modules -- -v=90
+
+        # For version test
+        # unbuffer ginkgo -focus="should be able to use a version|should upgrade from a version to another" -vv --no-color --trace ./tests/hw-accel/kmm/modules -- -v=90
+
+        # For webhook validation test
+        # unbuffer ginkgo -focus="should fail if no container image is specified in the module|should fail if the regexp isn't valid in the module|should fail if no regexp nor literal are set in a kernel mapping|should fail if both regexp and literal are set in a kernel mapping|should fail if there are duplications in modulesLoadingOrder|should fail if the 'main' kmod isn't the first one in modulesLoadingOrder|should fail creating module with both moduleName and rawargs|should require rawargs when moduleName is not net|should require image tag or digest for container image|should allow only specific effects|should allow only specific operator|should check value is empty for operator Exists" -vv --no-color --trace ./tests/hw-accel/kmm/modules -- -v=90
+
+        # For DTK auto test
+        # unbuffer ginkgo -focus="should use DTK_AUTO parameter|should be able to modify a kmod in a module|should fail to update an existing module with something that is wrong|should be able to run preflightvalidation with no push to registry|should be able to run preflightvalidation and push to registry" -vv --no-color --trace ./tests/hw-accel/kmm/modules -- -v=90      
+
       args:
         chdir: "{{ eco_gotests_directory }}"
         executable: /bin/bash
