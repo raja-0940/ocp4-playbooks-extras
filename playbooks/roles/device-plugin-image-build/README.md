@@ -1,0 +1,1 @@
+Building device plugin image in Power

@@ -1,0 +1,7 @@
+---
+kmm_enabled: false
+kmm_catalogsource_image: "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-op-420@sha256:021b19cb376a0deef4b399cbdfce6a02c5dc54a84c160ae8435652669b7379dd"
+kmm_namespace: "openshift-kmm"
+kmm_channel: "stable"
+kmm_catalogsource_name: "kmm-qe"
+upi_cluster: false

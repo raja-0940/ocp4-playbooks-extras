@@ -1,0 +1,4 @@
+- name: Validate eco-gotests
+  hosts: bastion
+  roles:
+  - eco-gotests
