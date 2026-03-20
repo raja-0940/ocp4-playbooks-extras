@@ -10,6 +10,6 @@ device_plugin_workdir: /tmp/oc-dummy-device-plugin
 go_toolset_image: go-toolset
 
 # Repo
-device_plugin_repo: https://github.com//cdvultur/oc-dummy-device-plugin.git
+device_plugin_repo: https://github.com/raja-0940/oc-dummy-device-plugin.git
 go_toolset_containerfile_url: >
   https://raw.githubusercontent.com/openshift/oc-mirror/refs/heads/main/Dockerfile
